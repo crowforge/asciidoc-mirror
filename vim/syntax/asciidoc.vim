@@ -32,7 +32,8 @@ syn match asciidocBackslash /\\/
 syn region asciidocIdMarker start=/^\$Id:\s/ end=/\s\$$/
 syn match asciidocCallout /\\\@<!<\d\{1,2}>/
 syn match asciidocOpenBlockDelimiter /^--$/
-syn match asciidocLineBreak /[ \t]+$/
+" allow line break in lists
+syn match asciidocLineBreak /[ \t]+$/ conceal containedin=asciidocList
 syn match asciidocRuler /^'\{3,}$/
 syn match asciidocPagebreak /^<\{3,}$/
 syn match asciidocEntityRef /\\\@<!&[#a-zA-Z]\S\{-};/
@@ -41,27 +42,48 @@ syn match asciidocURL /\\\@<!\<\(http\|https\|ftp\|file\|irc\):\/\/[^| \t]*\(\w\
 syn match asciidocEmail /[\\.:]\@<!\(\<\|<\)\w\(\w\|[.-]\)*@\(\w\|[.-]\)*\w>\?[0-9A-Za-z_]\@!/
 syn match asciidocAttributeRef /\\\@<!{\w\(\w\|[-,+]\)*\([=!@#$%?:].*\)\?}/
 
+" delimiters: conceal or highlight as SpecialChar
+syn match asciidocConcealMonospaced	contained "[+]" conceal containedin=asciidocQuotedMonospaced
+syn match asciidocConcealMonospaced2	contained "[`]" conceal containedin=asciidocQuotedMonospaced2
+syn match asciidocConcealUMonospaced	contained "++"  conceal containedin=asciidocQuotedUnconstrainedMonospaced
+syn match asciidocConcealEmphasized	contained "[_]" conceal containedin=asciidocQuotedEmphasized
+syn match asciidocConcealEmphasized2	contained "[']" conceal containedin=asciidocQuotedEmphasized2
+syn match asciidocConcealBold		contained "[*]" conceal containedin=asciidocQuotedBold
+" delimiters: highlight as SpecialChar
+syn match asciidocDelimiterUnquoted	contained "[#]"         containedin=asciidocQuotedUnquoted
+syn match asciidocDelimiterSubscript	contained "[~]"         containedin=asciidocQuotedSubscript
+syn match asciidocDelimiterSuperscript	contained "\^"          containedin=asciidocQuotedSuperscript
+
+" escaping: conceal
+syn match asciidocConcealUnReplacement	contained "\\\([-=]>\)\@=" conceal containedin=asciidocQuotedMonospaced,asciidocQuotedMonospaced2
+syn match asciidocConcealUnReplacement	contained "\\\(<[-=]\)\@=" conceal containedin=asciidocQuotedMonospaced,asciidocQuotedMonospaced2
+
 " As a damage control measure quoted patterns always terminate at a blank
 " line (see 'Limitations' above).
 syn match asciidocQuotedAttributeList /\\\@<!\[[a-zA-Z0-9_-][a-zA-Z0-9 _-]*\][+_'`#*]\@=/
 syn match asciidocQuotedSubscript /\\\@<!\~\S\_.\{-}\(\~\|\n\s*\n\)/ contains=asciidocEntityRef
 syn match asciidocQuotedSuperscript /\\\@<!\^\S\_.\{-}\(\^\|\n\s*\n\)/ contains=asciidocEntityRef
 
-syn match asciidocQuotedMonospaced /\(^\|[| \t([.,=\]]\)\@<=+\([ )\n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(+\([| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
-syn match asciidocQuotedMonospaced2 /\(^\|[| \t([.,=\]]\)\@<=`\([ )\n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(`\([| \t)[\],.?!;:=]\|$\)\@=\)/
+" allow ) as first char
+" allow -−~^+`_ around
+syn match asciidocQuotedMonospaced   /\(^\|[-−~^+`_| \t([.,=\]]\)\@<=+\([ \n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(+\([-−~^+`_| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
+	\ containedin=asciidocQuotedSubscript,asciidocQuotedSuperscript
+syn match asciidocQuotedMonospaced2  /\(^\|[-−~^+`_| \t([.,=\]]\)\@<=`\([ \n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(`\([-−~^+`_| \t)[\],.?!;:=]\|$\)\@=\)/
+	\ containedin=asciidocQuotedSubscript,asciidocQuotedSuperscript
+syn match asciidocQuotedEmphasized   /\(^\|[-−~^+`_| \t([.,=\]]\)\@<=_\([ \n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(_\([-−~^+`_| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
+	\ containedin=asciidocQuotedSubscript,asciidocQuotedSuperscript
+syn match asciidocQuotedEmphasized2  /\(^\|[-−~^+`_| \t([.,=\]]\)\@<='\([ \n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\('\([-−~^+`_| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
+	\ containedin=asciidocQuotedSubscript,asciidocQuotedSuperscript
+syn match asciidocQuotedBold         /\(^\|[-−~^+`_| \t([.,=\]]\)\@<=\*\([ \n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(\*\([-−~^+`_| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
+	\ containedin=asciidocQuotedSubscript,asciidocQuotedSuperscript
+syn match asciidocQuotedSingleQuoted /\(^\|[-−~^+`_| \t([.,=\]]\)\@<=`\([ \n\t]\)\@!\([^`]\|\n\(\s*\n\)\@!\)\{-}[^` \t]\('\([-−~^+`_| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
+	\ containedin=asciidocQuotedSubscript,asciidocQuotedSuperscript
+syn match asciidocQuotedDoubleQuoted /\(^\|[-−~^+`_| \t([.,=\]]\)\@<=``\([ \n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(''\([-−~^+`_| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
+	\ containedin=asciidocQuotedSubscript,asciidocQuotedSuperscript
+" not modified, but have to be executed after Quoted*
 syn match asciidocQuotedUnconstrainedMonospaced /[\\+]\@<!++\S\_.\{-}\(++\|\n\s*\n\)/ contains=asciidocEntityRef
-
-syn match asciidocQuotedEmphasized /\(^\|[| \t([.,=\]]\)\@<=_\([ )\n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(_\([| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
-syn match asciidocQuotedEmphasized2 /\(^\|[| \t([.,=\]]\)\@<='\([ )\n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\('\([| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
-syn match asciidocQuotedUnconstrainedEmphasized /\\\@<!__\S\_.\{-}\(__\|\n\s*\n\)/ contains=asciidocEntityRef
-
-syn match asciidocQuotedBold /\(^\|[| \t([.,=\]]\)\@<=\*\([ )\n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(\*\([| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
-syn match asciidocQuotedUnconstrainedBold /\\\@<!\*\*\S\_.\{-}\(\*\*\|\n\s*\n\)/ contains=asciidocEntityRef
-
-" Don't allow ` in single quoted (a kludge to stop confusion with `monospaced`).
-syn match asciidocQuotedSingleQuoted /\(^\|[| \t([.,=\]]\)\@<=`\([ )\n\t]\)\@!\([^`]\|\n\(\s*\n\)\@!\)\{-}[^` \t]\('\([| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
-
-syn match asciidocQuotedDoubleQuoted /\(^\|[| \t([.,=\]]\)\@<=``\([ )\n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(''\([| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
+" add to allow delimiter highlight
+syn match asciidocQuotedUnquoted     /\(^\|[-−~^+`_| \t([.,=\]]\)\@<=#\([ \n\t]\)\@!\(.\|\n\(\s*\n\)\@!\)\{-}\S\(#\([-−~^+`_| \t)[\],.?!;:=]\|$\)\@=\)/ contains=asciidocEntityRef
 
 syn match asciidocDoubleDollarPassthrough /\\\@<!\(^\|[^0-9a-zA-Z$]\)\@<=\$\$..\{-}\(\$\$\([^0-9a-zA-Z$]\|$\)\@=\|^$\)/
 syn match asciidocTriplePlusPassthrough /\\\@<!\(^\|[^0-9a-zA-Z$]\)\@<=+++..\{-}\(+++\([^0-9a-zA-Z$]\|$\)\@=\|^$\)/
@@ -178,6 +200,16 @@ highlight link asciidocToDo Todo
 highlight link asciidocTriplePlusPassthrough Special
 highlight link asciidocTwoLineTitle Title
 highlight link asciidocURL Macro
+highlight def link asciidocConcealMonospaced		SpecialChar
+highlight def link asciidocConcealMonospaced2		SpecialChar
+highlight def link asciidocConcealUMonospaced		SpecialChar
+highlight def link asciidocConcealEmphasized		SpecialChar
+highlight def link asciidocConcealEmphasized2		SpecialChar
+highlight def link asciidocConcealBold			SpecialChar
+highlight def link asciidocDelimiterUnquoted		SpecialChar
+highlight def link asciidocDelimiterSubscript		SpecialChar
+highlight def link asciidocDelimiterSuperscript	SpecialChar
+highlight def link asciidocConcealUnReplacement	SpecialChar
 let b:current_syntax = "asciidoc"
 
 " vim: wrap et sw=2 sts=2:
